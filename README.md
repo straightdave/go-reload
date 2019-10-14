@@ -5,10 +5,7 @@ experiment for go code hot reloading
 
 ## Conclusion 1
 
-In the first experiment, we
-* use endpoints to set which plugin to use without restarting server
-* all plugins obey to same function signature (the protocol of caller)
-* functions implemented in plugins can be cached
+We can dynamically change server's behaviors without recompiling or restarting.
 
 ```bash
 # there are two so files 'hello1.so' and 'hello2.so',
