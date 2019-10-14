@@ -29,11 +29,14 @@ func (n *nominator) get() string {
 	return n.name
 }
 
-var n = &nominator{}
+var (
+	n     = &nominator{}
+	cache = make(map[string]func() string) // func-level cache
+)
 
 func main() {
 	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %q", getName())
+		fmt.Fprintf(w, "Hello, %q", getWho())
 	})
 
 	http.HandleFunc("/nominator", func(w http.ResponseWriter, r *http.Request) {
@@ -62,10 +65,15 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
-// get name from different plugins
-// all 'so' files should be put in the same directory
-func getName() string {
-	pluginName := fmt.Sprintf(n.get() + ".so")
+func getWho() string {
+	pn := n.get()
+
+	fKey := fmt.Sprintf("%s#%s", pn, "Who")
+	if f, ok := cache[fKey]; ok {
+		return f()
+	}
+
+	pluginName := fmt.Sprintf(pn + ".so")
 	p, err := plugin.Open(pluginName)
 	if err != nil {
 		return err.Error()
@@ -77,6 +85,7 @@ func getName() string {
 	}
 
 	if f, ok := v.(func() string); ok {
+		cache[fKey] = f
 		return f()
 	}
 	return fmt.Sprintf("Who() is not %q in %q", "func() string", pluginName)

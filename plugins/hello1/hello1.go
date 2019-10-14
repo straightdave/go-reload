@@ -1,7 +1,7 @@
 // a plugin is required to be main package
 package main
 
-// // dummy main function
+// main function is not required
 // func main() {}
 
 func Who() string {
